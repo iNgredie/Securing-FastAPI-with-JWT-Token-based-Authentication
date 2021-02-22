@@ -1,2 +1,4 @@
 fastAPI
 uvicorn
+PyJWT
+python-decouple
