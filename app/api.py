@@ -1,5 +1,7 @@
-from fastapi import FastAPI
-from app.model import PostSchema
+from fastapi import FastAPI, Body
+
+from app.auth.auht_handler import sign_jwt
+from app.model import PostSchema, UserSchema, UserLoginSchema
 
 posts = [
     {
@@ -44,4 +46,26 @@ async def add_post(post: PostSchema) -> dict:
     posts.append((post.dict()))
     return {
         'data': 'post added'
+    }
+
+
+@app.post('/user/signup', tags=['user'])
+async def create_user(user: UserSchema = Body(...)):
+    users.append(user) # replace with db call, making sure to hash the password first
+    return sign_jwt(user.email)
+
+
+def check_user(data: UserLoginSchema):
+    for user in users:
+        if user.email == data.email and user.password == data.password:
+            return True
+    return False
+
+
+@app.post('/user/login', tags=['user'])
+async def user_login(user:UserLoginSchema = Body(...)):
+    if check_user(user):
+        return sign_jwt(user.email)
+    return {
+        'error': 'Wrong login details!'
     }
